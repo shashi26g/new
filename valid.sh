@@ -7,4 +7,3 @@ else
 echo ""$file has no content" >> result.txt
 fi
 done
-cat result.txt
