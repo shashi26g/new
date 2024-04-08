@@ -4,6 +4,6 @@ for file in *; do
 if [ -s $file ]; then
 echo "$file has some content" >> result.txt
 else
-echo ""$file has no content" >> result.txt
+echo "$file has no content" >> result.txt
 fi
 done
