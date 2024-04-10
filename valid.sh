@@ -7,3 +7,4 @@ else
 echo "$file has no content" >> result.txt
 fi
 done
+echo "this is a new line"
