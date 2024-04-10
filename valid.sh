@@ -9,3 +9,4 @@ fi
 done
 echo "this is a new line"
 echo "i can see this"
+echo "hi"
