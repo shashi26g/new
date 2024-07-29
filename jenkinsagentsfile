@@ -1,83 +1,82 @@
 pipeline {
     agent none
-    environment {
-        STRING_VAR = "Shashi"
-        CHOICE_VAR = "DEV"
-        BOOLEAN_VAR = true
-        // Credentials
-        SECRET_TEXT = credentials('MY_TOKEN') 
-        USERNAME_PASS = credentials('MY_USER_NAME') 
-    }
-    triggers {
-        cron('H * * * *') // Periodic trigger every hour
-        pollSCM('H/2 * * * *') // Poll SCM every 2 minutes
-    }
-    stages {
-        stage('Stage 1') {
-            agent { label 'agent1' }
-            steps {
-                echo "Running Stage 1"
-                script {
+        environment {
+            STRING_VAR = "Shashi"
+            CHOICE_VAR = "DEV"
+            BOOLEAN_VAR = true
+            // Credentials
+            SECRET_TEXT = credentials('MY_TOKEN')
+            USERNAME = credentials('MY_USER_NAME')
+             }
+            
+            stages {
+                stage('Stage 1') {
+                agent { label 'agent1' }
+                steps {
+                    echo "Running Stage 1"
+                    script {
                     // Using a global variable
-                    def buildNumber = env.BUILD_NUMBER
+                    buildNumber = env.BUILD_NUMBER
                     echo "Build Number: ${buildNumber}"
-                }
-            }
-        }
-        stage('Stage 2') {
-            agent { label 'agent1' }
-            steps {
-                echo "Running Stage 2"
-                script {
+                            }
+                        }
+                                    }
+                stage('Stage 2') {
+                    agent { label 'agent1' }
+                    steps {
+                    echo "Running Stage 2"
+                    script {
                     // Using a global variable
-                    def jobName = env.JOB_NAME
+                    jobName = "env.JOB_NAME"
                     echo "Job Name: ${jobName}"
-                    echo "Stage 2 completed successfully"
-                }
-            }
-        }
-        stage('Stage 3') {
-            when {
-                allOf {
-                    branch 'master'
-                    branch 'dev'
-                }
-                expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
-            }
-            agent { label 'agent2' }
-            steps {
-                echo "Running Stage 3"
-                script {
+                    echo "stage2 completed successfully"
+                            }
+                            }
+                                }
+                stage('Stage 3') {
+                    when {
+                    allOf {
+                    expression {
+                    branch 'master, DEV'
+                                }
+                            }
+                        }
+                    agent { label 'agent2' }
+                    steps {
+                    echo "Running Stage 3"
+                    script {
                     // Using a global variable
-                    def jenkinsUrl = env.JENKINS_URL
+                    jenkinsUrl = "env.JENKINS_URL"
                     echo "Jenkins URL: ${jenkinsUrl}"
-                    echo "Stage 3 completed successfully"
-                }
-            }
-        }
-        stage('Stage 4') {
-            when {
-                expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
-            }
-            agent { label 'agent2' }
-            steps {
-                echo "Running Stage 4"
-                script {
+                    echo "stage3 completed successfully"
+                        }
+                    }
+                            }
+                stage('Stage 4') {
+                    agent { label 'agent2' }
+                    steps {
+                    echo "Running Stage 4"
+                    script {
                     // Using a global variable
-                    def buildUrl = env.BUILD_URL
+                    buildUrl = "env.BUILD_URL"
                     echo "Build URL: ${buildUrl}"
-                }
-            }
-        }
-    }
-    post {
-        always {
-            echo "Sending email"
-            emailext(
-                body: "Build ${env.BUILD_NUMBER} of ${env.JOB_NAME} has finished. Status: ${currentBuild.currentResult}",
-                subject: "Jenkins Build Notification",
+                            }
+                            }
+                        }
+                    }
+            triggers {
+                cron('H * * * *') // Periodic trigger every hour
+                pollSCM('*/2 * * * *') // Poll SCM every 2 minutes
+                        }
+
+            post {
+            always {
+            echo "sending email"
+            emailext body: "Build ${env.BUILD_NUMBER} of ${env.JOB_NAME} has finished. Status: ${currentBuild.currentResult}" ,
+            subject: "Jenkins Build Notification",
+
                 to: "shashi2668g@email.com"
-            )
-        }
+                    }
+            }
     }
-}
+
