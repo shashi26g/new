@@ -5,8 +5,8 @@ pipeline {
         CHOICE_VAR = "DEV"
         BOOLEAN_VAR = true
         // Credentials
-        SECRET_TEXT = credentials('MY_TOKEN')
-        USERNAME = credentials('MY_USER_NAME')
+        SECRET_TEXT = credentials('MY_TOKEN') 
+        USERNAME_PASS = credentials('MY_USER_NAME') 
     }
     triggers {
         cron('H * * * *') // Periodic trigger every hour
@@ -38,10 +38,11 @@ pipeline {
         }
         stage('Stage 3') {
             when {
-                anyOf {
+                allOf {
                     branch 'master'
-                    branch 'DEV'
+                    branch 'dev'
                 }
+                expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
             }
             agent { label 'agent2' }
             steps {
@@ -55,6 +56,9 @@ pipeline {
             }
         }
         stage('Stage 4') {
+            when {
+                expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+            }
             agent { label 'agent2' }
             steps {
                 echo "Running Stage 4"
