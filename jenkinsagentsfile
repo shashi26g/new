@@ -1,64 +1,82 @@
 pipeline {
     agent none
-    triggers {
-        cron('H/15 * * * *') // Periodic trigger
-        pollSCM('H/5 * * * *') // Poll SCM trigger
-    }
-    parameters {
-        string(name: 'STRING_PARAM', defaultValue: 'default_value', description: 'A string parameter')
-        choice(name: 'CHOICE_PARAM', choices: ['Option1', 'Option2', 'Option3'], description: 'A choice parameter')
-        booleanParam(name: 'BOOLEAN_PARAM', defaultValue: true, description: 'A boolean parameter')
-    }
-    environment {
-        ENV_STRING = "${params.STRING_PARAM}"
-        ENV_CHOICE = "${params.CHOICE_PARAM}"
-        ENV_BOOLEAN = "${params.BOOLEAN_PARAM}"
-        SECRET_TEXT = credentials('MY_TOKEN')
-        USERNAME_PASSWORD = credentials('MY_USER_NAME')
-    }
-    stages {
-        stage('Build') {
-            agent { label 'agent1' }
-            steps {
-                echo "Building on agent 1"
-                echo "String Parameter: ${ENV_STRING}"
-                echo "Choice Parameter: ${ENV_CHOICE}"
-                echo "Boolean Parameter: ${ENV_BOOLEAN}"
+        environment {
+            STRING_VAR = "Shashi"
+            CHOICE_VAR = "DEV"
+            BOOLEAN_VAR = true
+            // Credentials
+            SECRET_TEXT = credentials('MY_TOKEN')
+            USERNAME = credentials('MY_USER_NAME')
+             }
+            
+            stages {
+                stage('Stage 1') {
+                agent { label 'agent1' }
+                steps {
+                    echo "Running Stage 1"
+                    script {
+                    // Using a global variable
+                    buildNumber = env.BUILD_NUMBER
+                    echo "Build Number: ${buildNumber}"
+                            }
+                        }
+                                    }
+                stage('Stage 2') {
+                    agent { label 'agent1' }
+                    steps {
+                    echo "Running Stage 2"
+                    script {
+                    // Using a global variable
+                    jobName = "env.JOB_NAME"
+                    echo "Job Name: ${jobName}"
+                    echo "stage2 completed successfully"
+                            }
+                            }
+                                }
+                stage('Stage 3') {
+                    when {
+                    anyOf {
+                    expression {
+                    branch 'main, dev'
+                                }
+                            }
+                        }
+                    agent { label 'agent2' }
+                    steps {
+                    echo "Running Stage 3"
+                    script {
+                    // Using a global variable
+                    jenkinsUrl = "env.JENKINS_URL"
+                    echo "Jenkins URL: ${jenkinsUrl}"
+                    echo "stage3 completed successfully"
+                        }
+                    }
+                            }
+                stage('Stage 4') {
+                    agent { label 'agent2' }
+                    steps {
+                    echo "Running Stage 4"
+                    script {
+                    // Using a global variable
+                    buildUrl = "env.BUILD_URL"
+                    echo "Build URL: ${buildUrl}"
+                            }
+                            }
+                        }
+                    }
+            triggers {
+                cron('H * * * *') // Periodic trigger every hour
+                pollSCM('*/2 * * * *') // Poll SCM every 2 minutes
+                        }
+
+            post {
+            always {
+            echo "sending email"
+            emailext body: "Build ${env.BUILD_NUMBER} of ${env.JOB_NAME} has finished. Status: ${currentBuild.currentResult}" ,
+            subject: "Jenkins Build Notification",
+
+                to: "shashi2668g@email.com"
+                    }
             }
-        }
-        stage('Test') {
-            agent { label 'agent1' }
-            steps {
-                echo "Testing on agent 1"
-            }
-        }
-        stage('Deploy') {
-            when {
-                anyOf {
-                    branch 'main'
-                    branch 'dev'
-                }
-            }
-            agent { label 'agent2' }
-            steps {
-                echo "Deploying on agent 2"
-            }
-        }
-        stage('Post-Deploy Verification') {
-            agent { label 'agent2' }
-            steps {
-                echo "Post-Deploy Verification on agent 2"
-                echo "Using secret text: ${env.SECRET_TEXT}"
-                echo "Using username: ${env.USERNAME_PASSWORD_USR}"
-            }
-        }
     }
-    post {
-        success {
-            mail bcc: '', body: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) succeeded. Job URL: ${env.BUILD_URL}", cc: '', from: '', replyTo: '', subject: "Build succeeded: ${env.JOB_NAME} #${env.BUILD_NUMBER}", to: 'you@example.com'
-        }
-        failure {
-            mail bcc: '', body: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) failed. Job URL: ${env.BUILD_URL}", cc: '', from: '', replyTo: '', subject: "Build failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}", to: 'you@example.com'
-        }
-    }
-}
+
