@@ -13,8 +13,8 @@ pipeline {
         ENV_STRING = "${params.STRING_PARAM}"
         ENV_CHOICE = "${params.CHOICE_PARAM}"
         ENV_BOOLEAN = "${params.BOOLEAN_PARAM}"
-        SECRET_TEXT = credentials('secret-text-id')
-        USERNAME_PASSWORD = credentials('username-password-id')
+        SECRET_TEXT = credentials('MY_TOKEN')
+        USERNAME_PASSWORD = credentials('MY_USER_NAME')
     }
     stages {
         stage('Build') {
