@@ -13,6 +13,8 @@ pipeline {
         ENV_STRING = "${params.STRING_PARAM}"
         ENV_CHOICE = "${params.CHOICE_PARAM}"
         ENV_BOOLEAN = "${params.BOOLEAN_PARAM}"
+        SECRET_TEXT = credentials('secret-text-id')
+        USERNAME_PASSWORD = credentials('username-password-id')
     }
     stages {
         stage('Build') {
@@ -33,7 +35,7 @@ pipeline {
         stage('Deploy') {
             when {
                 anyOf {
-                    branch 'master'
+                    branch 'main'
                     branch 'dev'
                 }
             }
@@ -46,6 +48,8 @@ pipeline {
             agent { label 'agent2' }
             steps {
                 echo "Post-Deploy Verification on agent 2"
+                echo "Using secret text: ${env.SECRET_TEXT}"
+                echo "Using username: ${env.USERNAME_PASSWORD_USR}"
             }
         }
     }
@@ -55,19 +59,6 @@ pipeline {
         }
         failure {
             mail bcc: '', body: "Job '${env.JOB_NAME}' (${env.BUILD_NUMBER}) failed. Job URL: ${env.BUILD_URL}", cc: '', from: '', replyTo: '', subject: "Build failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}", to: 'you@example.com'
-        }
-    }
-    environment {
-        SECRET_TEXT = credentials('MY_TOKEN')
-        USERNAME_PASSWORD = credentials('MY_USER_NAME')
-    }
-    stages {
-        stage('Preparation') {
-            agent { label 'agent1' }
-            steps {
-                echo "Using secret text: ${env.SECRET_TEXT}"
-                echo "Using username: ${env.USERNAME_PASSWORD_USR}"
-            }
         }
     }
 }
